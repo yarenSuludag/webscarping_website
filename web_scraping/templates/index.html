@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Books</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Montserrat:wght@400;600&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #f0e5d8;
+            font-family: 'Libre Baskerville', serif;
+            color: #333;
+        }
+        .header {
+            background-color: #6b4f4f;
+            color: white;
+            padding: 40px;
+            border-radius: 0 0 10px 10px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 3rem;
+            margin: 0;
+        }
+        .header p {
+            font-size: 1.25rem;
+        }
+        .card {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: scale(1.03);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+        .card img {
+            height: 250px;
+            object-fit: cover;
+        }
+        .card-body {
+            background-color: #fff;
+            padding: 15px;
+        }
+        .card-title {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: #6b4f4f;
+        }
+        .card-text {
+            font-size: 1rem;
+            color: #555;
+        }
+        .filter-form {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #e5d6b2;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .filter-form input,
+        .filter-form select {
+            margin-bottom: 15px;
+        }
+        .btn-primary {
+            background-color: #6b4f4f;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #5a3d3d;
+        }
+        .footer {
+            background-color: #6b4f4f;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+        .loading-spinner {
+            width: 3rem;
+            height: 3rem;
+            border: 0.3em solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 0.3em solid #6b4f4f;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Library Books Collection</h1>
+            <p>Explore our curated collection and find your next read</p>
+        </div>
+        
+        <!-- Arama ve Filtreleme Formu -->
+        <form class="filter-form" method="get">
+            <div class="form-row">
+                <div class="col-md-4 mb-2">
+                    <input type="text" name="search" class="form-control" placeholder="Search by title" value="{{ request.args.get('search', '') }}">
+                </div>
+                <div class="col-md-2 mb-2">
+                    <input type="number" step="0.01" name="min_price" class="form-control" placeholder="Min Price" value="{{ request.args.get('min_price', '') }}">
+                </div>
+                <div class="col-md-2 mb-2">
+                    <input type="number" step="0.01" name="max_price" class="form-control" placeholder="Max Price" value="{{ request.args.get('max_price', '') }}">
+                </div>
+                <div class="col-md-2 mb-2">
+                    <select name="sort_by" class="form-control">
+                        <option value="">Sort By</option>
+                        <option value="price_asc" {% if request.args.get('sort_by') == 'price_asc' %}selected{% endif %}>Price Low to High</option>
+                        <option value="price_desc" {% if request.args.get('sort_by') == 'price_desc' %}selected{% endif %}>Price High to Low</option>
+                        <option value="title_asc" {% if request.args.get('sort_by') == 'title_asc' %}selected{% endif %}>Title A-Z</option>
+                        <option value="title_desc" {% if request.args.get('sort_by') == 'title_desc' %}selected{% endif %}>Title Z-A</option>
+                    </select>
+                </div>
+                <div class="col-md-2 mb-2">
+                    <button type="submit" class="btn btn-primary btn-block">Apply</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Yükleme Göstergesi -->
+        {% if books is none %}
+        <div class="text-center">
+            <div class="loading-spinner"></div>
+            <p>Loading...</p>
+        </div>
+        {% endif %}
+
+        <!-- Kitapları Listeleme -->
+        <div class="row">
+            {% for book in books %}
+            <div class="col-md-3 mb-4">
+                <div class="card">
+                    <img src="{{ book['Image'] }}" class="card-img-top" alt="{{ book['Title'] }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ book['Title'] }}</h5>
+                        <p class="card-text">Price: {{ book['Price'] }}</p>
+                        <p class="card-text">Availability: {{ book['Availability'] }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2024 Library Books Collection. All rights reserved.</p>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS ve jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
